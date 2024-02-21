@@ -1,0 +1,21 @@
+# Imports mock data
+import "tfplan/v2" as tfplan
+
+# Get all AWS instances from all modules
+config = filter tfplan.resource_changes as _, rc {
+    rc.type is "aws_config_configuration_recorder_status" and
+        (rc.change.actions contains "create" or rc.change.actions is ["update"])
+}
+
+# Rule to restrict instance types
+config_should_be_enabled = rule {
+    all config as _, c {
+        c.change.after.enabled in [true]
+    }
+}
+
+# Main rule that requires other rules to be true
+main = rule {
+    (config_should_be_enabled) else true
+}
+
