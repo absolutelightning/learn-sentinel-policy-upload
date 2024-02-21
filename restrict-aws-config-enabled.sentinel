@@ -10,12 +10,10 @@ config = filter tfplan.resource_changes as _, rc {
 # Rule that checks if the config should be enabled
 config_should_be_enabled = rule {
     all config as _, c {
-        c.change.after.enabled in [true]
+        c.change.after.is_enabled in [true]
     }
 }
 
 # Main rule that requires other rules to be true
-main = rule {
-    (config_should_be_enabled) else true
-}
+main = rule { config_should_be_enabled }
 
