@@ -1,18 +1,21 @@
 # Imports mock data
 import "tfplan/v2" as tfplan
 import "json"
+import "tfconfig/v2" as tfconfig
+
+print(tfconfig.resources)
 
 expandReferences = func() {
     s3_bucket_name_id_map = {}
     expanded_ref_map = {}
-    rw = tfplan.raw
-    for rw.configuration.root_module.resources as res {
-        if res.type == "aws_s3_bucket" {
+    for tfconfig.resources as _, res {
+        print(res)
+        if res.type is "aws_s3_bucket" {
             s3_bucket_name_id_map[res.name] = res.address + ".id"
         }
     }
-    for rw.configuration.root_module.resources as res {
-        exp = res.expressions
+    for tfconfig.resources as _, res {
+        exp = res["config"]
         for exp as k, v {
             if "references" in v {
                 for v["references"] as ref {
