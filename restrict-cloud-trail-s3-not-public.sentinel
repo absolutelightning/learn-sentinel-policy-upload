@@ -2,3 +2,7 @@
 import "tfplan/v2" as tfplan
 
 print(tfplan.raw)
+
+main = rule{
+    true
+}
