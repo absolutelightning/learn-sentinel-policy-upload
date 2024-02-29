@@ -3,8 +3,14 @@ import "tfplan/v2" as tfplan
 import "json"
 
 expand_references = func() {
+    s3_bucket_name_id_map = {}
     expanded_ref_map = {}
     rw = tfplan.raw
+    for rw.configuration.root_module.resources as res {
+        if res.type == "aws_s3_bucket" {
+            s3_bucket_name_id_map[res.name] = res.address + ".id"
+        }
+    }
     for rw.configuration.root_module.resources as res {
         exp = res.expressions
         for exp as k, v {
@@ -14,6 +20,24 @@ expand_references = func() {
                         expanded_ref_map[ref] = []
                     }
                     append(expanded_ref_map[ref], res)
+                }
+            } else if res.type is "aws_cloudtrail" {
+                bucket_name = exp["s3_bucket_name"]["constant_value"]
+                if "s3_bucket_name" in exp and "constant_value" in exp["s3_bucket_name"] {
+                    key = s3_bucket_name_id_map[bucket_name]
+                    if key not in expanded_ref_map {
+                        expanded_ref_map[key] = []
+                    }
+                    append(expanded_ref_map[key], res)
+                }
+            } else if res.type is "aws_s3_bucket_public_access_block" {
+                if "bucket" in exp and "constant_value" in exp["bucket"] {
+                    bucket_name = exp["bucket"]["constant_value"]
+                    key = s3_bucket_name_id_map[bucket_name]
+                    if key not in expanded_ref_map {
+                        expanded_ref_map[key] = []
+                    }
+                    append(expanded_ref_map[key], res)
                 }
             }
         }
