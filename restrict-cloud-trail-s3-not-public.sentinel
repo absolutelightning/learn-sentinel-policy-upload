@@ -1,0 +1,4 @@
+# Imports mock data
+import "tfplan/v2" as tfplan
+
+print(tfplan.raw)
