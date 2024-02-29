@@ -2,7 +2,7 @@
 import "tfplan/v2" as tfplan
 import "json"
 
-expand_references = func() {
+expandReferences = func() {
     s3_bucket_name_id_map = {}
     expanded_ref_map = {}
     rw = tfplan.raw
@@ -51,8 +51,8 @@ getResourceByAddr = func(addr) {
     }
 }
 
-check_all_cloudtrail_s3_bucket_public_access = func() {
-    expanded_refs = expand_references()
+checkAllCloudtrailS3BucketPublicAccess = func() {
+    expanded_refs = expandReferences()
     valid_cloudtrails = []
     found_public_policy = false
     cloudtrail_linked = []
@@ -84,5 +84,5 @@ check_all_cloudtrail_s3_bucket_public_access = func() {
 }
 
 main = rule {
-    check_all_cloudtrail_s3_bucket_public_access()
+    checkAllCloudtrailS3BucketPublicAccess()
 }
