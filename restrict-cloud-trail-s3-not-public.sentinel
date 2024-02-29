@@ -1,8 +1,64 @@
 # Imports mock data
 import "tfplan/v2" as tfplan
+import "json"
 
-print(tfplan.raw)
+expand_references = func() {
+    expanded_ref_map = {}
+    rw = tfplan.raw
+    for rw.configuration.root_module.resources as res {
+        exp = res.expressions
+        for exp as k, v {
+            if "references" in v {
+                for v["references"] as ref {
+                    if ref not in expanded_ref_map {
+                        expanded_ref_map[ref] = []
+                    }
+                    append(expanded_ref_map[ref], res)
+                }
+            }
+        }
+    }
+    return expanded_ref_map
+}
 
-main = rule{
-    true
+getResourceByAddr = func(addr) {
+    return filter tfplan.planned_values.resources as _, instance {
+        instance.address is addr
+    }
+}
+
+check_all_cloudtrail_s3_bucket_public_access = func() {
+    expanded_refs = expand_references()
+    valid_cloudtrails = []
+    found_public_policy = false
+    cloudtrail_linked = []
+    for expanded_refs as addr, res {
+        for res as v {
+            if v.type is "aws_s3_bucket_public_access_block" {
+                policyres = getResourceByAddr(v.address)
+                value = policyres[v.address]["values"]
+                if value.block_public_acls is true and 
+                    value.block_public_policy is true and 
+                    value.ignore_public_acls is true and 
+                    value.restrict_public_buckets is true {
+                    found_public_policy = true
+                }
+            } 
+            if v.type is "aws_cloudtrail" {
+                append(cloudtrail_linked, v.address)
+            }
+        }
+        if found_public_policy {
+            valid_cloudtrails = valid_cloudtrails + cloudtrail_linked
+        }
+    }
+    all_cloudtrail = filter tfplan.resource_changes as _, instances {
+        instances.type is "aws_cloudtrail"
+    }
+    remaining = filter all_cloudtrail as v {v not in valid_cloudtrails}
+    return length(remaining) == 0
+}
+
+main = rule {
+    check_all_cloudtrail_s3_bucket_public_access()
 }
