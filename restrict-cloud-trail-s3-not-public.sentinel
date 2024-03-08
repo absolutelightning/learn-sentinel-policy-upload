@@ -4,6 +4,14 @@ import "json"
 import "strings"
 import "tfgraph/v2" as tfgraph
 
+
+print("graph start ************************************")
+for tfgraph.graph["Nodes"] as _, n {
+    print(n)
+    print("")
+}
+print("graph end ************************************")
+
 getKeyAfterRemovingIndexes = func(st) {
     ls = strings.split(st, ".")
     res = []
@@ -12,13 +20,6 @@ getKeyAfterRemovingIndexes = func(st) {
     }
     return strings.join(res, ".")
 }
-
-print("graph start ************************************")
-for tfgraph.graph["Nodes"] as _, n {
-    print(n)
-    print("")
-}
-print("graph end ************************************")
 
 walkgraph = func(resAd, attribute) {
     resAddr = getKeyAfterRemovingIndexes(resAd)
