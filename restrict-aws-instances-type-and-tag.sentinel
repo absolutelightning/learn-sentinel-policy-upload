@@ -35,7 +35,6 @@ instance_type_allowed = rule {
     }
 }
 
-
 print(tfplan.raw)
 
 # Main rule that requires other rules to be true

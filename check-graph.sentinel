@@ -1,0 +1,44 @@
+import "tfgraph/v2" as tfgraph
+import "tfconfig/v2" as tfconfig
+import "tfplan/v2" as tfplan
+import "strings"
+
+res = tfgraph.computed_graph
+print(res)
+
+// Function to find all AWS CloudTrail resources in the plan
+get_cloudtrail_resources = func() {
+    cloudtrail_resources = []
+    for tfplan.resource_changes as _, v {
+        if v.type == "aws_cloudtrail" {
+            append(cloudtrail_resources, v)
+        }
+    }
+    return cloudtrail_resources
+}
+
+get_key_after_removing_indexes = func(st) {
+    ls = strings.split(st, ".")
+    res = []
+    for ls as k, v {
+        append(res, strings.split(v, "[")[0])
+    }
+    return strings.join(res, ".")
+}
+
+walk_graph = func (res, type, attribute) {
+    config = tfplan.raw.configuration
+    return true
+}
+
+check_cloud_trail_s3_bucket_permission = func() {
+    cloudtrailresources = get_cloudtrail_resources() 
+    for cloudtrailresources as _, r {
+        s3_bucket_res = walk_graph(res, "aws_s3_bucket", "s3_bucket_name")
+    }
+    return true
+}
+
+main = rule {
+    check_cloud_trail_s3_bucket_permission()
+}
