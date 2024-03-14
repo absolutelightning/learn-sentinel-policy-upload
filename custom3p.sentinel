@@ -1,0 +1,9 @@
+import "sentinelplugin-3p" as sentinelplugin
+
+print(sentinelplugin.batman)
+print(sentinelplugin.superman)
+print(sentinelplugin.check)
+
+main = rule {
+    true
+}

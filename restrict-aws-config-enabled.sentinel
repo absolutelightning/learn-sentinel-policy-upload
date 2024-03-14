@@ -1,19 +1,27 @@
-# Imports mock data
-import "tfplan/v2" as tfplan
+import "terraform" as tf
 
-# Get all Config from plan
-config = filter tfplan.resource_changes as _, rc {
-    rc.type is "aws_config_configuration_recorder_status" and
-        (rc.change.actions contains "create" or rc.change.actions is ["update"])
+resources = tf.resource_changes.with_type("aws_iam_account_password_policy")
+
+print(resources)
+
+validate_password_policy = func(resources) {
+	violations = []
+	for resources as _, res {
+		if keys(res["change"]["after"]) not contains "max_password_age" {
+			append(violations, res.address)
+			continue
+		}
+		if res.change.after.max_password_age > 90 {
+			append(violations, res.address)
+		}
+	}
+	if length(violations) == 0 {
+        return true
+	}
+	print("max expiry for passwords is not within 90 days for the following resources : ", violations)
+    return false
 }
 
-# Rule that checks if the config should be enabled
-config_should_be_enabled = rule {
-    all config as _, c {
-        c.change.after.is_enabled in [true]
-    }
+main = rule {
+	validate_password_policy(resources)
 }
-
-# Main rule that requires other rules to be true
-main = rule { config_should_be_enabled }
-

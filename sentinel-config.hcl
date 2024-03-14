@@ -1,16 +1,22 @@
-mock "tfplan/v2" {
-  module {
-    source = "mock-tfplan-v2.sentinel"
+import "plugin" "terraform" {
+  config = {
+    "plan_path": "./plan.json"
   }
 }
 
-mock "tfconfig/v2" {
-  module {
-    source = "mock-tfconfig-v2.sentinel"
+import "plugin" "tfplan/v2" {
+  config = {
+    "plan_path": "./plan.json"
   }
 }
-// mock "tfgraph/v2" {
-//   module {
-//     source = "mock-tfgraph-v2.sentinel"
-//   }
-// }
+
+import "plugin" "sentinelplugin-3p" {
+  source = "/Users/asheshvidyut/sentinelplugin-3p/sentinelplugin-3p"
+}
+
+sentinel {
+  features = {
+    apply-all = true
+    terraform = true
+  }
+}
