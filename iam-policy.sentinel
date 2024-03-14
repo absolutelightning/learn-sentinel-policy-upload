@@ -1,6 +1,9 @@
 import "terraform" as tf 
 
-print(tf.resources)
+print(tf.from_plan.resource_changes)
+print(tf.from_plan.resource_changes.with_type("aws_iam_account_password_policy"))
+
+print(tf.from_plan.resource_changes.filter_attribute_greater_than_value("max_password_age", 10))
 
 # find_resources = func(type) {
 # 	resources = filter tfplan.resource_changes as address, rc {
@@ -15,34 +18,31 @@ print(tf.resources)
 # 	return resources
 # }
 
-resources = find_resources("aws_iam_account_password_policy")
-print(resources)
-
 validate_password_policy = func(resources) {
-	violations = []
-	for resources as _, res {
-        print(res)
-        print("joker")
-		if keys(res["change"]["after"]) not contains "max_password_age" {
-            print("joker")
-            print(res)
-			append(violations, res.address)
-			continue
-		}
-		if res.change.after.max_password_age > 90 {
-            print("joker")
-            print(res)
-			append(violations, res.address)
-		}
-	}
-	if length(violations) == 0 {
-		print("max expiry for all passwords is within 90 days")
-		return true
-	}
-	print("max expiry for passwords is not within 90 days for the following resources : ", violations)
-	return false
+	# violations = []
+	# for resources as _, res {
+    #     print(res)
+    #     print("joker")
+	# 	if keys(res["change"]["after"]) not contains "max_password_age" {
+    #         print("joker")
+    #         print(res)
+	# 		append(violations, res.address)
+	# 		continue
+	# 	}
+	# 	if res.change.after.max_password_age > 90 {
+    #         print("joker")
+    #         print(res)
+	# 		append(violations, res.address)
+	# 	}
+	# }
+	# if length(violations) == 0 {
+	# 	print("max expiry for all passwords is within 90 days")
+	# 	return true
+	# }
+	# print("max expiry for passwords is not within 90 days for the following resources : ", violations)
+	return true
 }
 
 main = rule {
-	validate_password_policy(resources)
+	validate_password_policy(tf.resources_changes)
 }
