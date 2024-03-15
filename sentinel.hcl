@@ -10,6 +10,20 @@
 //   enforcement_level = "hard-mandatory"
 // }
 
+import "plugin" "sentinel-plugin-tfcommon" {
+  source = "../sentinel-plugin-tfcommon"
+  config = {
+    plan_path = "./plan.json"
+  }
+}
+
+sentinel {
+  features = {
+    apply-all = true
+    terraform = true
+  }
+}
+
 policy "iam-policy" {
   enforcement_level = "hard-mandatory"
 }
