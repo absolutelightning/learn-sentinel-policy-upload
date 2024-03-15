@@ -1,48 +1,31 @@
-import "terraform" as tf 
+import "sentinel-plugin-tfcommon" as tf 
 
-print(tf.from_plan.resource_changes)
-print(tf.from_plan.resource_changes.with_type("aws_iam_account_password_policy"))
-
-print(tf.from_plan.resource_changes.filter_attribute_greater_than_value("max_password_age", 10))
-
-# find_resources = func(type) {
-# 	resources = filter tfplan.resource_changes as address, rc {
-# 		rc.type is type and
-# 			rc.mode is "managed" and
-# 			(rc.change.actions contains "create" or rc.change.actions contains "update" or
-# 				rc.change.actions contains "read" or
-# 				(rc.change.actions contains "no-op" and
-# 					rc.change.after is not null))
-# 	}
-
-# 	return resources
-# }
-
-validate_password_policy = func(resources) {
-	# violations = []
-	# for resources as _, res {
-    #     print(res)
-    #     print("joker")
-	# 	if keys(res["change"]["after"]) not contains "max_password_age" {
-    #         print("joker")
-    #         print(res)
-	# 		append(violations, res.address)
-	# 		continue
-	# 	}
-	# 	if res.change.after.max_password_age > 90 {
-    #         print("joker")
-    #         print(res)
-	# 		append(violations, res.address)
-	# 	}
-	# }
-	# if length(violations) == 0 {
-	# 	print("max expiry for all passwords is within 90 days")
-	# 	return true
-	# }
-	# print("max expiry for passwords is not within 90 days for the following resources : ", violations)
-	return true
+validate_password_policy = func() {
+	violations = tf.from_plan.resource_changes.with_type("aws_iam_account_password_policy").with_mode("managed").filter_attribute_greater_than_value("max_password_age", 0)
+	if length(violations) == 0 {
+		summary = {}
+		summary["policy_name"] = "iam_max_password_age"
+		summary["violations"] = []
+		summary["success_message"] = "max expiry for all passwords is within 90 days"
+		print(tf.generate_policy_report(summary))
+		return true
+	}
+	summary = {}
+	summary["policy_name"] = "iam_max_password_age"
+	summary["violations"] = []
+	for violations as v {
+		append(summary["violations"], {
+			"name": v.name,
+			"address": v.address,
+			"module_address": "batman",
+			"message": "iam max age incorrect",
+		})
+	}
+	summary["success_message"] = "max expiry for all passwords is within 90 days"
+	print(tf.generate_policy_report(summary))
+	return false
 }
 
 main = rule {
-	validate_password_policy(tf.resources_changes)
+	validate_password_policy()
 }

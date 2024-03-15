@@ -1,17 +1,8 @@
-import "plugin" "terraform" {
+import "plugin" "sentinel-plugin-tfcommon" {
+  source = "../sentinel-plugin-tfcommon/sentinel-plugin-tfcommon"
   config = {
-    "plan_path": "./plan.json"
+    plan_path = "./plan.json"
   }
-}
-
-import "plugin" "tfplan/v2" {
-  config = {
-    "plan_path": "./plan.json"
-  }
-}
-
-import "plugin" "sentinelplugin-3p" {
-  source = "/Users/asheshvidyut/sentinelplugin-3p/sentinelplugin-3p"
 }
 
 sentinel {
