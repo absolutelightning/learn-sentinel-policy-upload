@@ -1,7 +1,8 @@
 import "sentinel-plugin-tfcommon" as tf 
 
 validate_password_policy = func() {
-	violations = tf.from_plan.resource_changes.with_change_actions_in(["create"]).with_type("aws_iam_account_password_policy").with_mode("managed").filter_attribute_greater_than_value("max_password_age", 90)
+	violations = tf.from_plan.resource_changes.with_change_actions_in(["create"]).with_type("aws_iam_account_password_policy").with_mode("managed").filter_attribute_value_exists("max_password_age").filter_attribute_equal_to_value("max_password_age", 45)
+	print(length(violations))
 	if length(violations) == 0 {
 		summary = {}
 		summary["policy_name"] = "iam_max_password_age"
